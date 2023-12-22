@@ -6,7 +6,9 @@ const Schema = mongoose.Schema;
 const passwordValitor =/^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/;
 const UserSchema = new Schema({
   username: { type: String, unique: true, required: true},
-  password: {type:String , required: true , Math:passwordValitor}
+  password: {type:String , required: true , Math:passwordValitor},
+  favouriteMovies: [Number],
+  mustWatchMovies: [Number]
 });
 
 UserSchema.methods.comparePassword = async function (passw) { 

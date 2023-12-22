@@ -14,7 +14,7 @@ router.get('/', async (req, res) => {
 router.post('/', asyncHandler(async (req, res) => {
     try {
         if (!req.body.username || !req.body.password) {
-            return res.status(400).json({ success: false, msg: 'Username and password are required.' });
+            return res.status(400).json({ success: false, msg: "Username and password are required." });
         }
         if (req.query.action === 'register') {
             await registerUser(req, res);
@@ -24,7 +24,7 @@ router.post('/', asyncHandler(async (req, res) => {
     } catch (error) {
         // Log the error and return a generic error message
         console.error(error);
-        res.status(500).json({ success: false, msg: 'Internal server error.' });
+        res.status(500).json({ success: false, msg: "Internal server error." });
     }
 }));
 
@@ -35,22 +35,109 @@ router.put('/:id', async (req, res) => {
         _id: req.params.id,
     }, req.body);
     if (result.matchedCount) {
-        res.status(200).json({ code:200, msg: 'User Updated Sucessfully' });
+        res.status(200).json({ code:200, msg: "User Updated Sucessfully" });
     } else {
-        res.status(404).json({ code: 404, msg: 'Unable to Update User' });
+        res.status(404).json({ code: 404, msg: "Unable to Update User"});
+    }
+});
+
+router.get('/:username/movies', async (req, res) => {
+    const username = req.params.username;
+
+    try {
+        const user = await User.findOne({username}).select('favouriteMovies');
+        res.status(200).json(user.favouriteMovies);
+    } catch (error) {
+        res.status(500).json({message: "Error retrieving favourite movies"});
+    }
+});
+
+router.post('/movies', async (req, res) => {
+    const userName = req.body.username;
+    const movieId = req.body.movieId;
+
+    try {
+        await User.findOneAndUpdate(
+            {username: userName}, 
+            {$addToSet: {favouriteMovies: movieId}}, 
+            {new: true}
+        );
+        res.status(200).json({message: "Favourite movie added successfully"});
+    } catch (error) {
+        res.status(500).json({message: "Error adding favourite movie"});
+    }
+});
+
+router.delete('/movies', async (req, res) => {
+    const userName = req.body.username;
+    const movieId = req.body.movieId;
+
+    try {
+        await User.findOneAndUpdate(
+            {username: userName},
+            {$pull: {favouriteMovies: movieId}}, 
+            {new: true}
+        );
+        res.status(200).json({message: "Favourite movie removed successfully"});
+    } catch (error) {
+        res.status(500).json({message: "Error removing favourite movie"});
+    }
+});
+
+
+router.get('/:username/mustWatch', async (req, res) => {
+    const username = req.params.username;
+
+    try {
+        const user = await User.findOne({username}).select('mustWatchMovies');
+        res.status(200).json(user.mustWatchMovies);
+    } catch (error) {
+        res.status(500).json({message: "Error retrieving must watch movies"});
+    }
+});
+
+router.post('/mustWatch', async (req, res) => {
+    const userName = req.body.username;
+    const movieId = req.body.movieId;
+
+    try {
+        await User.findOneAndUpdate(
+            {username: userName}, // 使用用户名作为查找条件
+            {$addToSet: {mustWatchMovies: movieId}}, // 更新操作
+            {new: true}
+        );
+        res.status(200).json({message: "Must watch movie added successfully"});
+    } catch (error) {
+        res.status(500).json({message: "Error adding must watch movie"});
+    }
+});
+
+router.delete('/mustWatch', async (req, res) => {
+    const userName = req.body.username;
+    const movieId = req.body.movieId;
+
+    try {
+        await User.findOneAndUpdate(
+            {username: userName},
+            {$pull: {mustWatchMovies: movieId}}, // 使用 $pull 来移除电影 ID
+            {new: true}
+        );
+        res.status(200).json({message: "Must watch movie removed successfully"});
+    } catch (error) {
+        res.status(500).json({message: "Error removing must watch movie"});
     }
 });
 
 async function registerUser(req, res) {
     // Add input validation logic here
     await User.create(req.body);
-    res.status(201).json({ success: true, msg: 'User successfully created.' });
+    res.status(201).json({ success: true, msg: "User successfully created." });
 };
 
 async function authenticateUser(req, res) {
     const user = await User.findByUserName(req.body.username);
     if (!user) {
-        return res.status(401).json({ success: false, msg: 'Authentication failed. User not found.' });
+        return res.status(401).json({ success: false, msg: "Authentication failed. User not found." });
     }
 
     const isMatch = await user.comparePassword(req.body.password);
@@ -58,7 +145,7 @@ async function authenticateUser(req, res) {
         const token = jwt.sign({ username: user.username }, process.env.SECRET);
         res.status(200).json({ success: true, token: 'BEARER ' + token });
     } else {
-        res.status(401).json({ success: false, msg: 'Wrong password.' });
+        res.status(401).json({ success: false, msg: "Wrong password."});
     }
 };
 
