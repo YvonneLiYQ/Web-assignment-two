@@ -15,13 +15,13 @@ Name: yangqing Li
 
 ## Setup requirements.
 
-cd .\movies-api\
-npm install
-npm run dev
++ cd .\movies-api\
++ npm install
++ npm run dev
 
-cd .\movies\
-npm install
-npm run start
++ cd .\movies\
++ npm install
++ npm run start
 
 
 ## API Configuration
